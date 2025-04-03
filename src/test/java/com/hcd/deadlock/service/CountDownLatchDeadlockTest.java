@@ -50,7 +50,7 @@ class CountDownLatchDeadlockTest {
 
     @Test
     void run()  {
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(3);
 
         try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
             Future<?> future1 = exec.submit(new ProcessTask(latch,
@@ -87,6 +87,7 @@ class CountDownLatchDeadlockTest {
         public void run() {
             log.info("START processing on thread {} ...", Thread.currentThread().getName());
 
+            latch.countDown();
             try {
                 latch.await();
             } catch (InterruptedException e) {
