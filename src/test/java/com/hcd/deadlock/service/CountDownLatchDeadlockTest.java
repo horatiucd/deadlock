@@ -13,17 +13,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @SpringBootTest
-class CyclicBarrierDeadlockTest {
+class CountDownLatchDeadlockTest {
 
-    private static final Logger log = LoggerFactory.getLogger(CyclicBarrierDeadlockTest.class);
+    private static final Logger log = LoggerFactory.getLogger(CountDownLatchDeadlockTest.class);
 
     @Autowired
     private EntityProcessor entityProcessor;
@@ -51,21 +50,21 @@ class CyclicBarrierDeadlockTest {
 
     @Test
     void run()  {
-        CyclicBarrier barrier = new CyclicBarrier(3);
+        CountDownLatch latch = new CountDownLatch(1);
 
         try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
-            Future<?> future1 = exec.submit(new ProcessTask(barrier,
+            Future<?> future1 = exec.submit(new ProcessTask(latch,
                     () -> entityProcessor.process1(entity1.getId(), entity2.getId())));
 
-            Future<?> future2 = exec.submit(new ProcessTask(barrier,
+            Future<?> future2 = exec.submit(new ProcessTask(latch,
                     () -> entityProcessor.process2(entity1.getId(), entity2.getId())));
 
-            barrier.await();
+            latch.countDown();
 
             future1.get();
             future2.get();
 
-        } catch (ExecutionException | InterruptedException | BrokenBarrierException e) {
+        } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -80,7 +79,7 @@ class CyclicBarrierDeadlockTest {
         Assertions.assertFalse(entity2.getText().isEmpty());
     }
 
-    private record ProcessTask(CyclicBarrier barrier, Runnable runnable) implements Runnable {
+    private record ProcessTask(CountDownLatch latch, Runnable runnable) implements Runnable {
 
         private static final Logger log = LoggerFactory.getLogger(ProcessTask.class);
 
@@ -89,9 +88,9 @@ class CyclicBarrierDeadlockTest {
             log.info("START processing on thread {} ...", Thread.currentThread().getName());
 
             try {
-                barrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                log.error("Could not await().", e);
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
 
             runnable.run();

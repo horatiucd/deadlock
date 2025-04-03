@@ -9,4 +9,3 @@
 ### Sychronization Aid:
 * CyclicBarrier
 * CountDownLatch
-* Structured Concurrency (JEP 428)
