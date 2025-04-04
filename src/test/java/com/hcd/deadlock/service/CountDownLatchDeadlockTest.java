@@ -72,11 +72,11 @@ class CountDownLatchDeadlockTest {
 
         entity1 = entity1Repo.findById(entity1.getId())
                 .orElseThrow(() -> new RuntimeException("Entity1 not found"));
-        Assertions.assertFalse(entity1.getText().isEmpty());
+        Assertions.assertTrue(entity1.getText().startsWith("Set by process"));
 
         entity2 = entity2Repo.findById(entity2.getId())
                 .orElseThrow(() -> new RuntimeException("Entity2 not found"));
-        Assertions.assertFalse(entity2.getText().isEmpty());
+        Assertions.assertTrue(entity1.getText().startsWith("Set by process"));
     }
 
     private record ProcessTask(CountDownLatch latch, Runnable runnable) implements Runnable {

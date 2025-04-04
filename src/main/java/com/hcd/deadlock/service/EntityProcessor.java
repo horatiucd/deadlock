@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 public class EntityProcessor {
 
@@ -26,37 +24,39 @@ public class EntityProcessor {
 
     @Transactional
     public void process1(long entity1Id, long entity2Id) {
-        log.info("START Process 1 - entity1Id: {}, entity2Id: {}", entity1Id, entity2Id);
+        final int index = 1;
+        log.info("START Process {} - entity1Id: {}, entity2Id: {}", index, entity1Id, entity2Id);
 
-        processEntity1(entity1Id);
+        processEntity1(index, entity1Id);
 
-        processEntity2(entity2Id);
+        processEntity2(index, entity2Id);
 
-        log.info("END Process 1");
+        log.info("END Process {}", index);
     }
 
     @Transactional
     public void process2(long entity1Id, long entity2Id) {
-        log.info("START Process 2 - entity1Id: {}, entity2Id: {}", entity1Id, entity2Id);
+        final int index = 2;
+        log.info("START Process {} - entity1Id: {}, entity2Id: {}", index, entity1Id, entity2Id);
 
-        processEntity2(entity2Id);
+        processEntity2(index, entity2Id);
 
-        processEntity1(entity1Id);
+        processEntity1(index, entity1Id);
 
-        log.info("END Process 2");
+        log.info("END Process {}", index);
     }
 
-    private void processEntity1(long entityId) {
+    private void processEntity1(int index, long entityId) {
         Entity1 entity1 = entity1Repo.findById(entityId)
                 .orElseThrow(() -> new RuntimeException("Entity1 not found"));
 
-        entity1.setText(UUID.randomUUID().toString());
+        entity1.setText("Set by process " + index);
     }
 
-    private void processEntity2(long entityId) {
+    private void processEntity2(int index, long entityId) {
         Entity2 entity2 = entity2Repo.findById(entityId)
                 .orElseThrow(() -> new RuntimeException("Entity2 not found"));
 
-        entity2.setText(UUID.randomUUID().toString());
+        entity2.setText("Set by process " + index);
     }
 }
