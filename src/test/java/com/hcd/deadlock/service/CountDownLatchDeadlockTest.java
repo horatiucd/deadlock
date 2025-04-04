@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @SpringBootTest
+@Rollback(false)
 class CountDownLatchDeadlockTest {
 
     private static final Logger log = LoggerFactory.getLogger(CountDownLatchDeadlockTest.class);
@@ -50,7 +52,7 @@ class CountDownLatchDeadlockTest {
 
     @Test
     void run()  {
-        CountDownLatch latch = new CountDownLatch(3);
+        CountDownLatch latch = new CountDownLatch(1);
 
         try (ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor()) {
             Future<?> future1 = exec.submit(new ProcessTask(latch,
@@ -87,7 +89,6 @@ class CountDownLatchDeadlockTest {
         public void run() {
             log.info("START processing on thread {} ...", Thread.currentThread().getName());
 
-            latch.countDown();
             try {
                 latch.await();
             } catch (InterruptedException e) {
