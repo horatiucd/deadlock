@@ -79,7 +79,7 @@ class CyclicBarrierDeadlockTest {
 
         entity2 = entity2Repo.findById(entity2.getId())
                 .orElseThrow(() -> new RuntimeException("Entity2 not found"));
-        Assertions.assertTrue(entity1.getText().startsWith("Set by process"));
+        Assertions.assertTrue(entity2.getText().startsWith("Set by process"));
     }
 
     private record ProcessTask(CyclicBarrier barrier, Runnable runnable) implements Runnable {
